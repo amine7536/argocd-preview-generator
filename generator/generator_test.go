@@ -36,11 +36,10 @@ func TestGenerateBasic(t *testing.T) {
 	}
 }
 
-func TestGenerateEmptyServicesAndInfra(t *testing.T) {
+func TestGenerateEmptyServices(t *testing.T) {
 	cfg := &config.AppsConfig{
 		Namespace: "preview-empty",
 		Services:  []config.Service{},
-		Infra:     []config.Infra{},
 	}
 
 	got, err := generator.Generate(cfg, "empty")
@@ -48,14 +47,12 @@ func TestGenerateEmptyServicesAndInfra(t *testing.T) {
 		t.Fatalf("Generate() error: %v", err)
 	}
 
-	// Should contain AppProject and Namespace only
 	if !contains(got, "kind: AppProject") {
 		t.Error("missing AppProject")
 	}
 	if !contains(got, "kind: Namespace") {
 		t.Error("missing Namespace")
 	}
-	// Should not contain any Application
 	if contains(got, "kind: Application") {
 		t.Error("unexpected Application in empty config")
 	}
@@ -67,7 +64,6 @@ func TestGenerateServicesOnly(t *testing.T) {
 		Services: []config.Service{
 			{Name: "api", ImageTag: "sha123"},
 		},
-		Infra: []config.Infra{},
 	}
 
 	got, err := generator.Generate(cfg, "svc-only")
@@ -83,32 +79,42 @@ func TestGenerateServicesOnly(t *testing.T) {
 	}
 }
 
-func TestGenerateSpecialCharsInValues(t *testing.T) {
+func TestGenerateBackend1DatabaseName(t *testing.T) {
 	cfg := &config.AppsConfig{
-		Namespace: "preview-special",
-		Services:  []config.Service{},
-		Infra: []config.Infra{
-			{
-				Name:           "redis",
-				Chart:          "redis",
-				RepoURL:        "https://charts.bitnami.com/bitnami",
-				TargetRevision: "18.x",
-				Values: map[string]interface{}{
-					"auth": map[string]interface{}{
-						"password": "p@ss:w0rd!#$",
-					},
-				},
-			},
+		Namespace: "preview-test",
+		Services: []config.Service{
+			{Name: "backend-1", ImageTag: "abc123"},
 		},
 	}
 
-	got, err := generator.Generate(cfg, "special")
+	got, err := generator.Generate(cfg, "my-feature")
 	if err != nil {
 		t.Fatalf("Generate() error: %v", err)
 	}
 
-	if !contains(got, "p@ss:w0rd!#$") {
-		t.Error("special characters not preserved in values")
+	if !contains(got, "database.name") {
+		t.Error("missing database.name helm parameter for backend-1")
+	}
+	if !contains(got, `"backend-1-my-feature"`) {
+		t.Error("database.name should be backend-1-<slug>")
+	}
+}
+
+func TestGenerateNonBackend1NoDatabaseParam(t *testing.T) {
+	cfg := &config.AppsConfig{
+		Namespace: "preview-test",
+		Services: []config.Service{
+			{Name: "front", ImageTag: "abc123"},
+		},
+	}
+
+	got, err := generator.Generate(cfg, "my-feature")
+	if err != nil {
+		t.Fatalf("Generate() error: %v", err)
+	}
+
+	if contains(got, "database.name") {
+		t.Error("front should not have database.name helm parameter")
 	}
 }
 
