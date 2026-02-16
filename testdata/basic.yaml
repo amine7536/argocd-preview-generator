@@ -1,0 +1,22 @@
+namespace: preview-feature-add-pricing
+services:
+  - name: backend-1
+    image_tag: "abc123def456"
+  - name: backend-2
+    image_tag: "ff00bb11aa22"
+  - name: front
+    image_tag: "123456789012"
+infra:
+  - name: postgres
+    chart: postgresql
+    repoURL: https://charts.bitnami.com/bitnami
+    targetRevision: "*"
+    values:
+      auth:
+        postgresPassword: postgres
+        username: backend1
+        password: backend1
+        database: backend1
+      primary:
+        persistence:
+          enabled: false

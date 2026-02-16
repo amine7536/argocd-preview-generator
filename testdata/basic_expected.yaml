@@ -1,0 +1,148 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: "feature-add-pricing"
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-3"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: "Preview environment: feature-add-pricing"
+  sourceRepos:
+    - "https://github.com/amine7536/akpe-*"
+    - "https://charts.bitnami.com/bitnami"
+  destinations:
+    - namespace: "preview-feature-add-pricing"
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "preview-feature-add-pricing"
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: "preview-feature-add-pricing-postgres"
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: "feature-add-pricing"
+  source:
+    repoURL: "https://charts.bitnami.com/bitnami"
+    chart: "postgresql"
+    targetRevision: "*"
+    helm:
+      valuesObject:
+        auth:
+            database: backend1
+            password: backend1
+            postgresPassword: postgres
+            username: backend1
+        primary:
+            persistence:
+                enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: "preview-feature-add-pricing"
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: "preview-feature-add-pricing-backend-1"
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: "feature-add-pricing"
+  source:
+    repoURL: "https://github.com/amine7536/akpe-backend-1.git"
+    targetRevision: main
+    path: k8s/
+    helm:
+      parameters:
+        - name: image.tag
+          value: "abc123def456"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: "preview-feature-add-pricing"
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: "preview-feature-add-pricing-backend-2"
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: "feature-add-pricing"
+  source:
+    repoURL: "https://github.com/amine7536/akpe-backend-2.git"
+    targetRevision: main
+    path: k8s/
+    helm:
+      parameters:
+        - name: image.tag
+          value: "ff00bb11aa22"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: "preview-feature-add-pricing"
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: "preview-feature-add-pricing-front"
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: "feature-add-pricing"
+  source:
+    repoURL: "https://github.com/amine7536/akpe-front.git"
+    targetRevision: main
+    path: k8s/
+    helm:
+      parameters:
+        - name: image.tag
+          value: "123456789012"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: "preview-feature-add-pricing"
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---

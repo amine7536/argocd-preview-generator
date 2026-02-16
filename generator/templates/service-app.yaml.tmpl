@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ quote .Name }}
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "{{ .SyncWave }}"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ quote .Slug }}
+  source:
+    repoURL: "https://github.com/amine7536/akpe-{{ .ServiceName }}.git"
+    targetRevision: main
+    path: k8s/
+    helm:
+      parameters:
+        - name: image.tag
+          value: {{ quote .ImageTag }}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ quote .Namespace }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---

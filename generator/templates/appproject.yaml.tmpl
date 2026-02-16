@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ quote .Slug }}
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "{{ .SyncWave }}"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: "Preview environment: {{ .Slug }}"
+  sourceRepos:
+    - "https://github.com/amine7536/akpe-*"
+    - "https://charts.bitnami.com/bitnami"
+  destinations:
+    - namespace: {{ quote .Namespace }}
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+---
