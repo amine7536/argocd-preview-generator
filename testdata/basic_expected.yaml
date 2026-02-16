@@ -29,49 +29,10 @@ metadata:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: "preview-feature-add-pricing-postgres"
-  namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "0"
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
-spec:
-  project: "feature-add-pricing"
-  source:
-    repoURL: "https://charts.bitnami.com/bitnami"
-    chart: "postgresql"
-    targetRevision: "*"
-    helm:
-      valuesObject:
-        auth:
-            database: backend1
-            password: backend1
-            postgresPassword: postgres
-            username: backend1
-        primary:
-            persistence:
-                enabled: false
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: "preview-feature-add-pricing"
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    retry:
-      limit: 5
-      backoff:
-        duration: 10s
-        factor: 2
-        maxDuration: 3m
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
   name: "preview-feature-add-pricing-backend-1"
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "0"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -84,6 +45,8 @@ spec:
       parameters:
         - name: image.tag
           value: "abc123def456"
+        - name: database.name
+          value: "backend-1-feature-add-pricing"
   destination:
     server: https://kubernetes.default.svc
     namespace: "preview-feature-add-pricing"
@@ -98,7 +61,7 @@ metadata:
   name: "preview-feature-add-pricing-backend-2"
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "0"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -125,7 +88,7 @@ metadata:
   name: "preview-feature-add-pricing-front"
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "0"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

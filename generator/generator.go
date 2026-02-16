@@ -2,12 +2,9 @@ package generator
 
 import (
 	"embed"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"text/template"
-
-	"gopkg.in/yaml.v3"
 
 	"github.com/amine7536/preview-generator/config"
 )
@@ -15,9 +12,7 @@ import (
 const (
 	SyncWaveProject   = "-3"
 	SyncWaveNamespace = "-2"
-	SyncWaveInfra     = "0"
-	SyncWaveService   = "1"
-	valuesIndent      = 8
+	SyncWaveService   = "0"
 )
 
 //go:embed templates/*.tmpl
@@ -34,17 +29,6 @@ type namespaceData struct {
 	SyncWave  string
 }
 
-type infraAppData struct {
-	Name           string
-	Slug           string
-	RepoURL        string
-	Chart          string
-	TargetRevision string
-	ValuesYAML     string
-	Namespace      string
-	SyncWave       string
-}
-
 type serviceAppData struct {
 	Name        string
 	Slug        string
@@ -52,6 +36,12 @@ type serviceAppData struct {
 	ImageTag    string
 	Namespace   string
 	SyncWave    string
+	HelmParams  []helmParam
+}
+
+type helmParam struct {
+	Name  string
+	Value string
 }
 
 func Generate(cfg *config.AppsConfig, slug string) (string, error) {
@@ -79,60 +69,31 @@ func Generate(cfg *config.AppsConfig, slug string) (string, error) {
 		return "", fmt.Errorf("namespace template: %w", err)
 	}
 
-	for _, infra := range cfg.Infra {
-		valuesYAML, valuesErr := marshalValuesYAML(infra.Values)
-		if valuesErr != nil {
-			return "", fmt.Errorf("infra %s values: %w", infra.Name, valuesErr)
-		}
-
-		if execErr := templates.ExecuteTemplate(&out, "infra-app.yaml.tmpl", infraAppData{
-			Name:           cfg.Namespace + "-" + infra.Name,
-			Slug:           slug,
-			RepoURL:        infra.RepoURL,
-			Chart:          infra.Chart,
-			TargetRevision: infra.TargetRevision,
-			ValuesYAML:     valuesYAML,
-			Namespace:      cfg.Namespace,
-			SyncWave:       SyncWaveInfra,
-		}); execErr != nil {
-			return "", fmt.Errorf("infra-app template: %w", execErr)
-		}
-	}
-
 	for _, svc := range cfg.Services {
-		err = templates.ExecuteTemplate(&out, "service-app.yaml.tmpl", serviceAppData{
+		data := serviceAppData{
 			Name:        cfg.Namespace + "-" + svc.Name,
 			Slug:        slug,
 			ServiceName: svc.Name,
 			ImageTag:    svc.ImageTag,
 			Namespace:   cfg.Namespace,
 			SyncWave:    SyncWaveService,
-		})
+		}
+
+		// backend-1 gets a per-preview database name
+		if svc.Name == "backend-1" {
+			data.HelmParams = append(data.HelmParams, helmParam{
+				Name:  "database.name",
+				Value: "backend-1-" + slug,
+			})
+		}
+
+		err = templates.ExecuteTemplate(&out, "service-app.yaml.tmpl", data)
 		if err != nil {
 			return "", fmt.Errorf("service-app template: %w", err)
 		}
 	}
 
 	return out.String(), nil
-}
-
-func marshalValuesYAML(values interface{}) (string, error) {
-	valuesJSON, err := json.Marshal(values)
-	if err != nil {
-		return "", err
-	}
-
-	var valuesMap interface{}
-	err = json.Unmarshal(valuesJSON, &valuesMap)
-	if err != nil {
-		return "", err
-	}
-	valuesYAML, err := yaml.Marshal(valuesMap)
-	if err != nil {
-		return "", err
-	}
-
-	return indentYAML(string(valuesYAML), valuesIndent), nil
 }
 
 func buildTemplates() (*template.Template, error) {
@@ -148,15 +109,4 @@ func buildTemplates() (*template.Template, error) {
 	}
 
 	return tmpl, nil
-}
-
-func indentYAML(s string, spaces int) string {
-	prefix := strings.Repeat(" ", spaces)
-	lines := strings.Split(strings.TrimRight(s, "\n"), "\n")
-	for i, line := range lines {
-		if line != "" {
-			lines[i] = prefix + line
-		}
-	}
-	return strings.Join(lines, "\n")
 }

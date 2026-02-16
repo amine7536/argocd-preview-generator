@@ -17,6 +17,10 @@ spec:
       parameters:
         - name: image.tag
           value: {{ quote .ImageTag }}
+{{- range .HelmParams }}
+        - name: {{ .Name }}
+          value: {{ quote .Value }}
+{{- end }}
   destination:
     server: https://kubernetes.default.svc
     namespace: {{ quote .Namespace }}
