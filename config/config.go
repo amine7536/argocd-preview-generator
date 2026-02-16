@@ -33,8 +33,8 @@ func Load(path string) (*AppsConfig, error) {
 	}
 
 	var cfg AppsConfig
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return nil, fmt.Errorf("failed to parse %s: %w", path, err)
+	if unmarshalErr := yaml.Unmarshal(data, &cfg); unmarshalErr != nil {
+		return nil, fmt.Errorf("failed to parse %s: %w", path, unmarshalErr)
 	}
 
 	return &cfg, nil

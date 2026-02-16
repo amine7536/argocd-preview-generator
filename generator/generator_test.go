@@ -1,4 +1,4 @@
-package generator
+package generator_test
 
 import (
 	"os"
@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/amine7536/preview-generator/config"
+	"github.com/amine7536/preview-generator/generator"
 )
 
 func testdataDir() string {
@@ -20,7 +21,7 @@ func TestGenerateBasic(t *testing.T) {
 		t.Fatalf("config.Load() error: %v", err)
 	}
 
-	got, err := Generate(cfg, "feature-add-pricing")
+	got, err := generator.Generate(cfg, "feature-add-pricing")
 	if err != nil {
 		t.Fatalf("Generate() error: %v", err)
 	}
@@ -42,7 +43,7 @@ func TestGenerateEmptyServicesAndInfra(t *testing.T) {
 		Infra:     []config.Infra{},
 	}
 
-	got, err := Generate(cfg, "empty")
+	got, err := generator.Generate(cfg, "empty")
 	if err != nil {
 		t.Fatalf("Generate() error: %v", err)
 	}
@@ -69,7 +70,7 @@ func TestGenerateServicesOnly(t *testing.T) {
 		Infra: []config.Infra{},
 	}
 
-	got, err := Generate(cfg, "svc-only")
+	got, err := generator.Generate(cfg, "svc-only")
 	if err != nil {
 		t.Fatalf("Generate() error: %v", err)
 	}
@@ -101,7 +102,7 @@ func TestGenerateSpecialCharsInValues(t *testing.T) {
 		},
 	}
 
-	got, err := Generate(cfg, "special")
+	got, err := generator.Generate(cfg, "special")
 	if err != nil {
 		t.Fatalf("Generate() error: %v", err)
 	}

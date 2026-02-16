@@ -30,5 +30,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Print(out)
+	if _, writeErr := os.Stdout.WriteString(out); writeErr != nil {
+		fmt.Fprintf(os.Stderr, "write output failed: %v\n", writeErr)
+		os.Exit(1)
+	}
 }
