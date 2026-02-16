@@ -1,9 +1,11 @@
-package config
+package config_test
 
 import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/amine7536/preview-generator/config"
 )
 
 func TestLoad(t *testing.T) {
@@ -23,7 +25,7 @@ infra:
         postgresPassword: postgres
 `
 	path := writeTemp(t, yaml)
-	cfg, err := Load(path)
+	cfg, err := config.Load(path)
 	if err != nil {
 		t.Fatalf("Load() error: %v", err)
 	}
@@ -46,7 +48,7 @@ infra:
 }
 
 func TestLoadMissingFile(t *testing.T) {
-	_, err := Load("/nonexistent/path.yaml")
+	_, err := config.Load("/nonexistent/path.yaml")
 	if err == nil {
 		t.Fatal("Load() expected error for missing file")
 	}
@@ -54,7 +56,7 @@ func TestLoadMissingFile(t *testing.T) {
 
 func TestLoadInvalidYAML(t *testing.T) {
 	path := writeTemp(t, "{{invalid yaml")
-	_, err := Load(path)
+	_, err := config.Load(path)
 	if err == nil {
 		t.Fatal("Load() expected error for invalid YAML")
 	}
@@ -66,7 +68,7 @@ services: []
 infra: []
 `
 	path := writeTemp(t, yaml)
-	cfg, err := Load(path)
+	cfg, err := config.Load(path)
 	if err != nil {
 		t.Fatalf("Load() error: %v", err)
 	}
@@ -82,7 +84,7 @@ func writeTemp(t *testing.T, content string) string {
 	t.Helper()
 	dir := t.TempDir()
 	path := filepath.Join(dir, "apps.yaml")
-	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	return path
