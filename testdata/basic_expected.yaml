@@ -39,7 +39,7 @@ spec:
   project: "feature-add-pricing"
   source:
     repoURL: "https://github.com/amine7536/akpe-backend-1.git"
-    targetRevision: main
+    targetRevision: abc123def456
     path: k8s/
     helm:
       parameters:
@@ -68,7 +68,7 @@ spec:
   project: "feature-add-pricing"
   source:
     repoURL: "https://github.com/amine7536/akpe-backend-2.git"
-    targetRevision: main
+    targetRevision: ff00bb11aa22
     path: k8s/
     helm:
       parameters:
@@ -95,7 +95,7 @@ spec:
   project: "feature-add-pricing"
   source:
     repoURL: "https://github.com/amine7536/akpe-front.git"
-    targetRevision: main
+    targetRevision: 123456789012
     path: k8s/
     helm:
       parameters:

@@ -11,7 +11,7 @@ spec:
   project: {{ quote .Slug }}
   source:
     repoURL: "https://github.com/amine7536/akpe-{{ .ServiceName }}.git"
-    targetRevision: main
+    targetRevision: {{ .ImageTag }}
     path: k8s/
     helm:
       parameters:
