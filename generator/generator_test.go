@@ -114,6 +114,37 @@ func TestGenerateHelmParams(t *testing.T) {
 	}
 }
 
+func TestGenerateMainTracking(t *testing.T) {
+	cfg := &config.AppsConfig{
+		Services: []config.Service{
+			{Name: "backend-1", ImageTag: "abc123"},
+			{Name: "backend-2"},
+			{Name: "front"},
+		},
+	}
+
+	got, err := generator.Generate(cfg, "my-feature")
+	if err != nil {
+		t.Fatalf("Generate() error: %v", err)
+	}
+
+	// backend-1 is pinned
+	if !contains(got, "targetRevision: abc123") {
+		t.Error("backend-1 should have pinned targetRevision")
+	}
+	if !contains(got, `value: "abc123"`) {
+		t.Error("backend-1 should have pinned image.tag")
+	}
+
+	// backend-2 and front track main
+	if !contains(got, "targetRevision: main") {
+		t.Error("main-tracking services should have targetRevision: main")
+	}
+	if !contains(got, `"$ARGOCD_APP_REVISION"`) {
+		t.Error("main-tracking services should use $ARGOCD_APP_REVISION")
+	}
+}
+
 func contains(s, substr string) bool {
 	return len(s) >= len(substr) && searchString(s, substr)
 }

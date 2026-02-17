@@ -11,12 +11,12 @@ spec:
   project: {{ quote .Slug }}
   source:
     repoURL: "https://github.com/amine7536/akpe-{{ .ServiceName }}.git"
-    targetRevision: {{ .ImageTag }}
+    targetRevision: {{ if .ImageTag }}{{ .ImageTag }}{{ else }}main{{ end }}
     path: k8s/
     helm:
       parameters:
         - name: image.tag
-          value: {{ quote .ImageTag }}
+          value: {{ if .ImageTag }}{{ quote .ImageTag }}{{ else }}"$ARGOCD_APP_REVISION"{{ end }}
 {{- range .HelmParams }}
         - name: {{ .Name }}
           value: {{ quote .Value }}
