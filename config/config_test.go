@@ -33,8 +33,9 @@ func TestLoad(t *testing.T) {
 	if len(cfg.Services[0].HelmParams) != 1 {
 		t.Fatalf("Services[0].HelmParams count = %d, want 1", len(cfg.Services[0].HelmParams))
 	}
-	if cfg.Services[0].HelmParams[0].Name != "database.name" || cfg.Services[0].HelmParams[0].Value != "backend-1-test" {
-		t.Errorf("Services[0].HelmParams[0] = %+v", cfg.Services[0].HelmParams[0])
+	hp := cfg.Services[0].HelmParams[0]
+	if hp.Name != "database.name" || hp.Value != "backend-1-test" {
+		t.Errorf("Services[0].HelmParams[0] = %+v", hp)
 	}
 }
 
