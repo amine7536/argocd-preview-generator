@@ -8,13 +8,18 @@ import (
 )
 
 type AppsConfig struct {
-	Namespace string    `yaml:"namespace"`
-	Services  []Service `yaml:"services"`
+	Services []Service `yaml:"services"`
+}
+
+type HelmParam struct {
+	Name  string `yaml:"name"`
+	Value string `yaml:"value"`
 }
 
 type Service struct {
-	Name     string `yaml:"name"`
-	ImageTag string `yaml:"image_tag"`
+	Name       string      `yaml:"name"`
+	ImageTag   string      `yaml:"image_tag"`
+	HelmParams []HelmParam `yaml:"helm_params"`
 }
 
 func Load(path string) (*AppsConfig, error) {

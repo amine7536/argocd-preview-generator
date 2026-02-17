@@ -38,8 +38,7 @@ func TestGenerateBasic(t *testing.T) {
 
 func TestGenerateEmptyServices(t *testing.T) {
 	cfg := &config.AppsConfig{
-		Namespace: "preview-empty",
-		Services:  []config.Service{},
+		Services: []config.Service{},
 	}
 
 	got, err := generator.Generate(cfg, "empty")
@@ -60,7 +59,6 @@ func TestGenerateEmptyServices(t *testing.T) {
 
 func TestGenerateServicesOnly(t *testing.T) {
 	cfg := &config.AppsConfig{
-		Namespace: "preview-svc-only",
 		Services: []config.Service{
 			{Name: "api", ImageTag: "sha123"},
 		},
@@ -71,7 +69,7 @@ func TestGenerateServicesOnly(t *testing.T) {
 		t.Fatalf("Generate() error: %v", err)
 	}
 
-	if !contains(got, `"preview-svc-only-api"`) {
+	if !contains(got, `"svc-only-api"`) {
 		t.Error("missing service application name")
 	}
 	if !contains(got, `value: "sha123"`) {
@@ -79,11 +77,21 @@ func TestGenerateServicesOnly(t *testing.T) {
 	}
 }
 
-func TestGenerateBackend1DatabaseName(t *testing.T) {
+func TestGenerateHelmParams(t *testing.T) {
 	cfg := &config.AppsConfig{
-		Namespace: "preview-test",
 		Services: []config.Service{
-			{Name: "backend-1", ImageTag: "abc123"},
+			{
+				Name:     "backend-1",
+				ImageTag: "abc123",
+				HelmParams: []config.HelmParam{
+					{Name: "database.name", Value: "backend-1-my-feature"},
+					{Name: "extra.param", Value: "some-value"},
+				},
+			},
+			{
+				Name:     "front",
+				ImageTag: "def456",
+			},
 		},
 	}
 
@@ -96,25 +104,13 @@ func TestGenerateBackend1DatabaseName(t *testing.T) {
 		t.Error("missing database.name helm parameter for backend-1")
 	}
 	if !contains(got, `"backend-1-my-feature"`) {
-		t.Error("database.name should be backend-1-<slug>")
+		t.Error("database.name value missing")
 	}
-}
-
-func TestGenerateNonBackend1NoDatabaseParam(t *testing.T) {
-	cfg := &config.AppsConfig{
-		Namespace: "preview-test",
-		Services: []config.Service{
-			{Name: "front", ImageTag: "abc123"},
-		},
+	if !contains(got, "extra.param") {
+		t.Error("missing extra.param helm parameter")
 	}
-
-	got, err := generator.Generate(cfg, "my-feature")
-	if err != nil {
-		t.Fatalf("Generate() error: %v", err)
-	}
-
-	if contains(got, "database.name") {
-		t.Error("front should not have database.name helm parameter")
+	if !contains(got, `"some-value"`) {
+		t.Error("extra.param value missing")
 	}
 }
 
