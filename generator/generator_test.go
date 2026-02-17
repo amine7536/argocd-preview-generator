@@ -77,43 +77,6 @@ func TestGenerateServicesOnly(t *testing.T) {
 	}
 }
 
-func TestGenerateHelmParams(t *testing.T) {
-	cfg := &config.AppsConfig{
-		Services: []config.Service{
-			{
-				Name:     "backend-1",
-				ImageTag: "abc123",
-				HelmParams: []config.HelmParam{
-					{Name: "database.name", Value: "backend-1-my-feature"},
-					{Name: "extra.param", Value: "some-value"},
-				},
-			},
-			{
-				Name:     "front",
-				ImageTag: "def456",
-			},
-		},
-	}
-
-	got, err := generator.Generate(cfg, "my-feature")
-	if err != nil {
-		t.Fatalf("Generate() error: %v", err)
-	}
-
-	if !contains(got, "database.name") {
-		t.Error("missing database.name helm parameter for backend-1")
-	}
-	if !contains(got, `"backend-1-my-feature"`) {
-		t.Error("database.name value missing")
-	}
-	if !contains(got, "extra.param") {
-		t.Error("missing extra.param helm parameter")
-	}
-	if !contains(got, `"some-value"`) {
-		t.Error("extra.param value missing")
-	}
-}
-
 func TestGenerateMainTracking(t *testing.T) {
 	cfg := &config.AppsConfig{
 		Services: []config.Service{

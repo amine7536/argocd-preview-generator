@@ -12,9 +12,6 @@ func TestLoad(t *testing.T) {
 	yaml := `services:
   - name: backend-1
     image_tag: "abc123"
-    helm_params:
-      - name: database.name
-        value: "backend-1-test"
   - name: front
     image_tag: "def456"
 `
@@ -29,13 +26,6 @@ func TestLoad(t *testing.T) {
 	}
 	if cfg.Services[0].Name != "backend-1" || cfg.Services[0].ImageTag != "abc123" {
 		t.Errorf("Services[0] = %+v", cfg.Services[0])
-	}
-	if len(cfg.Services[0].HelmParams) != 1 {
-		t.Fatalf("Services[0].HelmParams count = %d, want 1", len(cfg.Services[0].HelmParams))
-	}
-	hp := cfg.Services[0].HelmParams[0]
-	if hp.Name != "database.name" || hp.Value != "backend-1-test" {
-		t.Errorf("Services[0].HelmParams[0] = %+v", hp)
 	}
 }
 

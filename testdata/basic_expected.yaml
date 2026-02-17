@@ -45,8 +45,6 @@ spec:
       parameters:
         - name: image.tag
           value: "abc123def456"
-        - name: database.name
-          value: "backend-1-feature-add-pricing"
   destination:
     server: https://kubernetes.default.svc
     namespace: "feature-add-pricing"

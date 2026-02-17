@@ -34,12 +34,6 @@ type serviceAppData struct {
 	ServiceName string
 	ImageTag    string
 	SyncWave    string
-	HelmParams  []helmParam
-}
-
-type helmParam struct {
-	Name  string
-	Value string
 }
 
 func Generate(cfg *config.AppsConfig, slug string) (string, error) {
@@ -67,18 +61,12 @@ func Generate(cfg *config.AppsConfig, slug string) (string, error) {
 	}
 
 	for _, svc := range cfg.Services {
-		var params []helmParam
-		for _, p := range svc.HelmParams {
-			params = append(params, helmParam{Name: p.Name, Value: p.Value})
-		}
-
 		data := serviceAppData{
 			Name:        slug + "-" + svc.Name,
 			Slug:        slug,
 			ServiceName: svc.Name,
 			ImageTag:    svc.ImageTag,
 			SyncWave:    SyncWaveService,
-			HelmParams:  params,
 		}
 
 		err = templates.ExecuteTemplate(&out, "service-app.yaml.tmpl", data)

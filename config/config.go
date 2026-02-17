@@ -11,15 +11,9 @@ type AppsConfig struct {
 	Services []Service `yaml:"services"`
 }
 
-type HelmParam struct {
-	Name  string `yaml:"name"`
-	Value string `yaml:"value"`
-}
-
 type Service struct {
-	Name       string      `yaml:"name"`
-	ImageTag   string      `yaml:"image_tag"`
-	HelmParams []HelmParam `yaml:"helm_params"`
+	Name     string `yaml:"name"`
+	ImageTag string `yaml:"image_tag"`
 }
 
 func Load(path string) (*AppsConfig, error) {

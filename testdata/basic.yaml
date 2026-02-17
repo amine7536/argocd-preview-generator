@@ -1,9 +1,6 @@
 services:
   - name: backend-1
     image_tag: "abc123def456"
-    helm_params:
-      - name: database.name
-        value: "backend-1-feature-add-pricing"
   - name: backend-2
     image_tag: "ff00bb11aa22"
   - name: front

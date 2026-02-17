@@ -17,10 +17,6 @@ spec:
       parameters:
         - name: image.tag
           value: {{ if .ImageTag }}{{ quote .ImageTag }}{{ else }}"$ARGOCD_APP_REVISION"{{ end }}
-{{- range .HelmParams }}
-        - name: {{ .Name }}
-          value: {{ quote .Value }}
-{{- end }}
   destination:
     server: https://kubernetes.default.svc
     namespace: {{ quote .Slug }}
