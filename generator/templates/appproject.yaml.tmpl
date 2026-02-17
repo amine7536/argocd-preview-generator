@@ -13,7 +13,7 @@ spec:
     - "https://github.com/amine7536/akpe-*"
     - "https://charts.bitnami.com/bitnami"
   destinations:
-    - namespace: {{ quote .Namespace }}
+    - namespace: {{ quote .Slug }}
       server: https://kubernetes.default.svc
   clusterResourceWhitelist:
     - group: ""

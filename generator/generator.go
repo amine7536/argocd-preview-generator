@@ -19,14 +19,13 @@ const (
 var templateFS embed.FS
 
 type appProjectData struct {
-	Slug      string
-	Namespace string
-	SyncWave  string
+	Slug     string
+	SyncWave string
 }
 
 type namespaceData struct {
-	Namespace string
-	SyncWave  string
+	Slug     string
+	SyncWave string
 }
 
 type serviceAppData struct {
@@ -34,7 +33,6 @@ type serviceAppData struct {
 	Slug        string
 	ServiceName string
 	ImageTag    string
-	Namespace   string
 	SyncWave    string
 	HelmParams  []helmParam
 }
@@ -53,38 +51,34 @@ func Generate(cfg *config.AppsConfig, slug string) (string, error) {
 	}
 
 	err = templates.ExecuteTemplate(&out, "appproject.yaml.tmpl", appProjectData{
-		Slug:      slug,
-		Namespace: cfg.Namespace,
-		SyncWave:  SyncWaveProject,
+		Slug:     slug,
+		SyncWave: SyncWaveProject,
 	})
 	if err != nil {
 		return "", fmt.Errorf("appproject template: %w", err)
 	}
 
 	err = templates.ExecuteTemplate(&out, "namespace.yaml.tmpl", namespaceData{
-		Namespace: cfg.Namespace,
-		SyncWave:  SyncWaveNamespace,
+		Slug:     slug,
+		SyncWave: SyncWaveNamespace,
 	})
 	if err != nil {
 		return "", fmt.Errorf("namespace template: %w", err)
 	}
 
 	for _, svc := range cfg.Services {
+		var params []helmParam
+		for _, p := range svc.HelmParams {
+			params = append(params, helmParam{Name: p.Name, Value: p.Value})
+		}
+
 		data := serviceAppData{
-			Name:        cfg.Namespace + "-" + svc.Name,
+			Name:        slug + "-" + svc.Name,
 			Slug:        slug,
 			ServiceName: svc.Name,
 			ImageTag:    svc.ImageTag,
-			Namespace:   cfg.Namespace,
 			SyncWave:    SyncWaveService,
-		}
-
-		// backend-1 gets a per-preview database name
-		if svc.Name == "backend-1" {
-			data.HelmParams = append(data.HelmParams, helmParam{
-				Name:  "database.name",
-				Value: "backend-1-" + slug,
-			})
+			HelmParams:  params,
 		}
 
 		err = templates.ExecuteTemplate(&out, "service-app.yaml.tmpl", data)
